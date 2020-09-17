@@ -32,7 +32,12 @@ fun Application.module() {
     install(StatusPages) {
         exception<AuthorizationException> {
             call.response.status(HttpStatusCode.Forbidden)
-            call.respond(FreeMarkerContent("forbidden.ftl", mapOf("reason" to it.message)))
+            call.respond(
+                FreeMarkerContent(
+                    "forbidden.ftl",
+                    mapOf("userSession" to call.sessions.get<UserSession>(), "reason" to it.message)
+                )
+            )
         }
     }
 
@@ -63,8 +68,8 @@ fun Application.module() {
 
     routing {
 
-        get("/") { call.respond(FreeMarkerContent("index.ftl", null)) }
-        get("/login") { call.respond(FreeMarkerContent("login.ftl", null)) }
+        get("/") { call.showContent("home.ftl") }
+        get("/login") { call.showContent("login.ftl") }
 
         post("/login") {
             val params = call.receiveParameters()
@@ -134,6 +139,14 @@ fun Application.module() {
     }
 
 }
+
+suspend fun ApplicationCall.showContent(template: String) = respond(
+    FreeMarkerContent(
+        template,
+        mapOf("userSession" to sessions.get<UserSession>())
+    )
+)
+
 
 suspend fun ApplicationCall.showProtectedContent(template: String, restriction: String) = respond(
     FreeMarkerContent(

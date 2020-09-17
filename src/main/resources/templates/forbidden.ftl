@@ -9,7 +9,7 @@
     </div>
 
     <div class="pure-u-3-4">
-        <h1>Forbidden</h1>
+        <div class="heading-forbidden">Forbidden</div>
         <p>The current user does not have sufficient privileges to view this page.</p>
         <p>${reason}</p>
     </div>

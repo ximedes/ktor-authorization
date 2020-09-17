@@ -9,7 +9,7 @@
     </div>
 
     <div class="pure-u-3-4">
-        <h1>Home</h1>
+        <div class="heading-allowed">Home</div>
         <p>This is the home page. It is available to all users, including not-logged in (anonymous) users</p>
     </div>
 </div>

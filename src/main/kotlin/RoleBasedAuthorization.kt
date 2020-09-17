@@ -31,8 +31,10 @@ class RoleBasedAuthorization(config: Configuration) {
         all: Set<Role>? = null,
         none: Set<Role>? = null
     ) {
-        pipeline.insertPhaseBefore(ApplicationCallPipeline.Call, authorizationPhase)
-        pipeline.intercept(authorizationPhase) {
+        pipeline.insertPhaseAfter(ApplicationCallPipeline.Features, Authentication.ChallengePhase)
+        pipeline.insertPhaseAfter(Authentication.ChallengePhase, AuthorizationPhase)
+
+        pipeline.intercept(AuthorizationPhase) {
             val principal =
                 call.authentication.principal<Principal>() ?: throw AuthorizationException("Missing principal")
             val roles = getRoles(principal)
@@ -75,7 +77,7 @@ class RoleBasedAuthorization(config: Configuration) {
     companion object Feature : ApplicationFeature<ApplicationCallPipeline, Configuration, RoleBasedAuthorization> {
         override val key = AttributeKey<RoleBasedAuthorization>("RoleBasedAuthorization")
 
-        private val authorizationPhase = PipelinePhase("Authorization")
+        val AuthorizationPhase = PipelinePhase("Authorization")
 
         override fun install(
             pipeline: ApplicationCallPipeline,
