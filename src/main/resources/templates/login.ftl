@@ -8,6 +8,9 @@
     </div>
 
     <div class="pure-u-3-4">
+        <h1>Login required</h1>
+        <p>Choose any usernames and select your desired roles.The password is always <code>secret</code></p>
+        <br/>
         <form action="/login" method="post" class="pure-form pure-form-aligned">
             <fieldset>
                 <div class="pure-control-group">

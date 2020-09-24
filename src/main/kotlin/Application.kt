@@ -18,8 +18,6 @@ fun main(args: Array<String>) = io.ktor.server.netty.EngineMain.main(args)
 data class UserSession(val name: String, val roles: Set<String> = emptySet()) : Principal
 data class OriginalRequestURI(val uri: String)
 
-const val SESSION_AUTH = "SESSION_AUTH"
-
 @Suppress("unused")
 fun Application.module() {
 
@@ -48,7 +46,7 @@ fun Application.module() {
 
     install(Authentication) {
 
-        session<UserSession>(SESSION_AUTH) {
+        session<UserSession> {
             challenge {
                 logger.info { "No valid session found for this route, redirecting to login form" }
                 call.sessions.set(OriginalRequestURI(call.request.uri))
@@ -93,7 +91,7 @@ fun Application.module() {
             call.respondRedirect("/")
         }
 
-        authenticate(SESSION_AUTH) {
+        authenticate {
             get("/login-required") {
                 call.showProtectedContent("protected.ftl", "Principal must exist")
             }

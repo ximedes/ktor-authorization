@@ -26,8 +26,7 @@ class RoleBasedAuthorization(config: Configuration) {
     }
 
     fun interceptPipeline(
-        pipeline: ApplicationCallPipeline,
-        any: Set<Role>? = null,
+        pipeline: ApplicationCallPipeline, any: Set<Role>? = null,
         all: Set<Role>? = null,
         none: Set<Role>? = null
     ) {
@@ -68,8 +67,6 @@ class RoleBasedAuthorization(config: Configuration) {
                 logger.warn { "Authorization failed for ${call.request.path()}. ${message}" }
                 throw AuthorizationException(message)
             }
-            return@intercept
-
         }
     }
 
@@ -80,8 +77,7 @@ class RoleBasedAuthorization(config: Configuration) {
         val AuthorizationPhase = PipelinePhase("Authorization")
 
         override fun install(
-            pipeline: ApplicationCallPipeline,
-            configure: Configuration.() -> Unit
+            pipeline: ApplicationCallPipeline, configure: Configuration.() -> Unit
         ): RoleBasedAuthorization {
             val configuration = Configuration().apply(configure)
             return RoleBasedAuthorization(configuration)
@@ -98,25 +94,28 @@ class AuthorisedRouteSelector(private val description: String) :
     override fun toString(): String = "(authorize ${description})"
 }
 
-fun Route.withRole(role: Role, build: Route.() -> Unit) = withAllRoles(role, build = build)
+fun Route.withRole(role: Role, build: Route.() -> Unit) = authorizedRoute(all = setOf(role), build = build)
 
-fun Route.withAnyRole(vararg roles: Role, build: Route.() -> Unit): Route {
-    val authorisedRoute = createChild(AuthorisedRouteSelector("anyOf ${roles.joinToString(" ")}"))
-    application.feature(RoleBasedAuthorization).interceptPipeline(authorisedRoute, any = roles.toSet())
-    authorisedRoute.build()
-    return authorisedRoute
-}
+fun Route.withAllRoles(vararg roles: Role, build: Route.() -> Unit) =
+    authorizedRoute(all = roles.toSet(), build = build)
 
-fun Route.withAllRoles(vararg roles: Role, build: Route.() -> Unit): Route {
-    val authorisedRoute = createChild(AuthorisedRouteSelector("allOf ${roles.joinToString(" ")}"))
-    application.feature(RoleBasedAuthorization).interceptPipeline(authorisedRoute, all = roles.toSet())
-    authorisedRoute.build()
-    return authorisedRoute
-}
+fun Route.withAnyRole(vararg roles: Role, build: Route.() -> Unit) = authorizedRoute(any = roles.toSet(), build = build)
 
-fun Route.withoutRoles(vararg roles: Role, build: Route.() -> Unit): Route {
-    val authorisedRoute = createChild(AuthorisedRouteSelector("noneOf ${roles.joinToString(" ")}"))
-    application.feature(RoleBasedAuthorization).interceptPipeline(authorisedRoute, none = roles.toSet())
+fun Route.withoutRoles(vararg roles: Role, build: Route.() -> Unit) =
+    authorizedRoute(none = roles.toSet(), build = build)
+
+private fun Route.authorizedRoute(
+    any: Set<Role>? = null,
+    all: Set<Role>? = null,
+    none: Set<Role>? = null, build: Route.() -> Unit
+): Route {
+
+    val description = listOfNotNull(
+        any?.let { "anyOf (${any.joinToString(" ")})" },
+        all?.let { "allOf (${all.joinToString(" ")})" },
+        none?.let { "noneOf (${none.joinToString(" ")})" }).joinToString(",")
+    val authorisedRoute = createChild(AuthorisedRouteSelector(description))
+    application.feature(RoleBasedAuthorization).interceptPipeline(authorisedRoute, any, all, none)
     authorisedRoute.build()
     return authorisedRoute
 }
