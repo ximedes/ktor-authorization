@@ -1,6 +1,8 @@
 # Role-based authorization in Ktor
 This repository contains a demo application showing a possible way to implement role-based authorization of routes in Ktor.
 
+More information on its design can be found in this [accompanying blog post](https://www.ximedes.com/role-based-authorization-in-ktor/).
+
 ## Running from IntelliJ IDEA
 Run the `main` method on line 16 in `Application.kt`
 
