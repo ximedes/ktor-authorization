@@ -87,7 +87,7 @@ class RoleBasedAuthorization(config: Configuration) {
     }
 }
 
-class AuthorisedRouteSelector(private val description: String) :
+class AuthorizedRouteSelector(private val description: String) :
     RouteSelector(RouteSelectorEvaluation.qualityConstant) {
     override fun evaluate(context: RoutingResolveContext, segmentIndex: Int) = RouteSelectorEvaluation.Constant
 
@@ -114,9 +114,9 @@ private fun Route.authorizedRoute(
         any?.let { "anyOf (${any.joinToString(" ")})" },
         all?.let { "allOf (${all.joinToString(" ")})" },
         none?.let { "noneOf (${none.joinToString(" ")})" }).joinToString(",")
-    val authorisedRoute = createChild(AuthorisedRouteSelector(description))
-    application.feature(RoleBasedAuthorization).interceptPipeline(authorisedRoute, any, all, none)
-    authorisedRoute.build()
-    return authorisedRoute
+    val authorizedRoute = createChild(AuthorizedRouteSelector(description))
+    application.feature(RoleBasedAuthorization).interceptPipeline(authorizedRoute, any, all, none)
+    authorizedRoute.build()
+    return authorizedRoute
 }
 
